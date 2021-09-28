@@ -40,9 +40,6 @@ Vagrant.configure("2") do |config|
     override.nfs.functional = false
     override.vm.allowed_synced_folder_types = :rsync
 
-    # Following the lab instructions should lead you to provide values
-    # appropriate for your environment for the configuration variable
-    # assignments preceded by double-hashes in the remainder of this
     # :aws configuration section.
 
     # The keypair_name parameter tells Amazon which public key to use.
@@ -84,13 +81,18 @@ Vagrant.configure("2") do |config|
     # below, so that Vagrant connects using username "ubuntu".
     override.ssh.username = "ubuntu"
   end
-
+  
+  
+  # Defines the webserver_user VM
+  config.vm.define "webserver_user" do |webserver_user|
+    webserver_user.vm.hostname = "webserver-user"
+	
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-   config.vm.provision "shell", inline: <<-SHELL
+  webserver_user.vm.provision "shell", inline: <<-SHELL
      apt-get update
-     apt-get install -y apache2
+     apt-get install -y apache2 php libapache2-mod-php php-mysql
 	 
 	 # Change VM's webserver_user's configuration to use shared folder.
 	 # (Look inside test-website.conf for specifics.)
@@ -99,6 +101,16 @@ Vagrant.configure("2") do |config|
 	 chmod 777 /vagrant
      chmod 777 /vagrant/www/user
      chmod 777 /vagrant/www/user/index.php
+	 chmod 777 /vagrant/www/user/details.php
+	 chmod 777 /vagrant/www/user/add.php
+	 chmod 777 /vagrant/www/user/config
+	 chmod 777 /vagrant/www/user/config/db_connect.php
+	 chmod 777 /vagrant/www/user/img
+	 chmod 777 /vagrant/www/user/img/pizza1.jpg
+	 chmod 777 /vagrant/www/user/templates
+	 chmod 777 /vagrant/www/user/templates/footer.php
+	 chmod 777 /vagrant/www/user/templates/header.php
+	 
 	 
      # activate our website configuration ...
      a2ensite user
@@ -107,4 +119,45 @@ Vagrant.configure("2") do |config|
      # Reload the webserver configuration, to pick up our changes
      service apache2 reload
    SHELL
+ end
+ 
+ 
+ 
+ # Defines the webserver_admin VM
+  config.vm.define "webserver_admin" do |webserver_admin|
+    webserver_admin.vm.hostname = "webserver-admin"
+	
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+    webserver_admin.vm.provision "shell", inline: <<-SHELL
+	 apt-get update
+     apt-get install -y apache2 php libapache2-mod-php php-mysql
+	 
+	 # Change VM's webserver_user's configuration to use shared folder.
+	 # (Look inside test-website.conf for specifics.)
+	 cp /vagrant/admin.conf /etc/apache2/sites-available/
+	 
+	 chmod 777 /vagrant
+     chmod 777 /vagrant/www/admin
+     chmod 777 /vagrant/www/admin/index.php
+	 chmod 777 /vagrant/www/admin/remove.php
+	 chmod 777 /vagrant/www/admin/add.php
+	 chmod 777 /vagrant/www/admin/config
+	 chmod 777 /vagrant/www/admin/config/db_connect.php
+	 chmod 777 /vagrant/www/admin/img
+	 chmod 777 /vagrant/www/admin/img/pizza1.jpg
+	 chmod 777 /vagrant/www/admin/templates
+	 chmod 777 /vagrant/www/admin/templates/footer.php
+	 chmod 777 /vagrant/www/admin/templates/header.php
+	 
+	 
+     # activate our website configuration ...
+     a2ensite admin
+     # ... and disable the default website provided with Apache
+     a2dissite 000-default
+     # Reload the webserver configuration, to pick up our changes
+     service apache2 reload
+   SHELL
+ end
 end
